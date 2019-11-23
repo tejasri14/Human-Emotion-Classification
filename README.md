@@ -1,4 +1,4 @@
-# Human-Emotion-Sentiment-Classification
+# Human-Emotion-Classification
 This project aims to use Kaggle's EEG Brainwave Dataset to classify the moods of two people based on the movie they are watching.
 
 "The data was collected from two people (1 male, 1 female) for 3 minutes per state - positive, neutral, negative. We used a Muse EEG headband which recorded the TP9, AF7, AF8 and TP10 EEG placements via dry electrodes. Six minutes of resting neutral data is also recorded, the stimuli used to evoke the emotions are below
