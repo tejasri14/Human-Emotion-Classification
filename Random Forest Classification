@@ -1,0 +1,76 @@
+#importing libraries 
+
+import pandas as pd                                                   #pandas
+import numpy as np                                                    #numpy
+from sklearn.decomposition import PCA                                 #PCA
+from sklearn.model_selection import train_test_split                  #splitting test and train data
+from sklearn.ensemble import RandomForestClassifier                   #Random Forest
+from sklearn.model_selection import RandomizedSearchCV                #to get the best parameters to tune the algorithm 
+from sklearn.metrics import accuracy_score                            #accuracy 
+import seaborn as sn 
+import matplotlib.pyplot as plt                                       #to plot the data points in the cusfusion matrix
+from sklearn.metrics import confusion_matrix                          #to display a confusion matrix
+
+data=pd.read_csv("C:/Users/Tejasri/Desktop/emotions.csv")
+data.head()
+
+emotion={"POSITIVE":1,"NEGATIVE":-1,"NEUTRAL":0}
+data["label"]=[emotion[item] for item in data["label"]]
+
+#to check if we have enough examples of each emotion, we count the number of examples of each type.
+  data["label"].value_counts()
+
+
+X=data.iloc[:,:2548]
+y=data.iloc[:,2548:2549]
+
+#According to the research paper, 40 features give best results
+  features=PCA(n_components=40)
+  principal_components=features.fit_transform(X)
+
+
+Data=pd.DataFrame(data=principal_components,columns=["one","two","three","four","five","six","seven","eight","nine","ten","eleven","twelve","thirteen","fourteen","fifteen","sixteen","seventeen","eighteen","nineteen","twenety","a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","t","v","w"])
+
+train_train,train_test,y_train,y_test= train_test_split(Data,y,test_size=0.2,random_state=1)
+
+#Randomized CV search
+  n_estimators=[int(x) for x in np.linspace(start=10,stop=100,num=10)]
+  max_features=["auto","sqrt","log2"]
+  max_depth=[int(x) for x in np.linspace(30,50,num=10)]
+  min_samples_split=[2,5,10]
+  min_samples_leaf=[2,5,10]
+  bootstrap=["True","False"]
+  random_grid = {'n_estimators': n_estimators,
+               'max_features': max_features,
+               'max_depth': max_depth,
+               'min_samples_split': min_samples_split,
+               'min_samples_leaf': min_samples_leaf,
+               'bootstrap': bootstrap}
+  rc_random = RandomizedSearchCV(estimator = rc, param_distributions=random_grid, n_iter = 100, cv = 10, random_state=42, n_jobs = -1)
+  rc_random.fit(train_train, y_train)
+  rc_random.best_params_
+  
+  
+ #Random Forest Classification
+  classifier=RandomForestClassifier(n_estimators=100,
+                                    min_samples_split=2,
+                                    min_samples_leaf=2,
+                                    max_features="log2",
+                                    max_depth=32,
+                                    bootstrap=True)
+
+
+
+
+#training the model
+  classifier.fit(train_train,y_train)
+  y_pred=classifier.predict(train_test)
+  y_pred.tolist()
+  test=y_test["label"].tolist()
+  print(accuracy_score(test,y_pred))
+  
+#plotting
+  cm=confusion_matrix(test,y_pred)
+  conf_matrix=pd.DataFrame(data=cm,columns=['Predicted:Neg','Predicted:Pos', 'Predicted:Neu'],index=['Actual:-1','Actual:1','Actual:0'])
+  plt.figure(figsize = (8,5))
+  sn.heatmap(conf_matrix, annot=True,fmt='d',cmap="YlGnBu")
